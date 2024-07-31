@@ -35,11 +35,12 @@ app.get('/hello-world', (req, res) => {
 app.post('/api/create', (req, res) => {
    (async () => {
        try {
-            await db.collection('products').doc('/' + req.body.id + '/')
+            await db.collection('karaoke').doc()
             .create({
-                name: req.body.name,
-                description: req.body.description,
-                price: req.body.price,
+                artista: req.body.artista,
+                cancion: req.body.cancion,
+                karaoke: req.body.karaoke,
+                canta:req.body.canta
             })
             return res.status(200).send('created'); 
        } 
@@ -56,11 +57,43 @@ app.get('/api/read/:id', (req, res) => {
 
         try {
             console.log('request id: ' + req.params.id); 
-           const document = db.collection('products').doc(req.params.id); 
+           const document = db.collection('karaoke').doc(req.params.id); 
 
-           let product = await document.get(); 
-           let response = product.data(); 
-           console.log(product); 
+           let karaoke = await document.get(); 
+           let response = karaoke.data(); 
+           console.log(karaoke); 
+           return res.status(200).send(response); 
+
+        } catch(error) {
+            console.log(error); 
+            return res.status(500).send(error); 
+        }
+    })(); 
+}); 
+
+//read by karaoke 
+app.get('/api/read/all/:karaoke', (req, res) => {
+    (async () => {
+        try {
+         
+            let query = db.collection('karaoke').where('karaoke', '==', req.params.karaoke);
+            let response = []; 
+            await query.get().then(querySnapshot => {
+                let docs = querySnapshot.docs; 
+
+                for(let doc of docs) 
+                {
+                    const selectedItem = {
+                        id: doc.id, 
+                        artista: doc.data().artista,
+                        cancion: doc.data().cancion, 
+                        karaoke: doc.data().karaoke,
+                        canta: doc.data().canta
+                    }; 
+                    response.push(selectedItem)
+                }
+                return response; 
+            })
            return res.status(200).send(response); 
 
         } catch(error) {
@@ -75,19 +108,20 @@ app.get('/api/read/', (req, res) => {
     (async () => {
 
         try {
-         
-            let query = db.collection('products'); 
+
+            let query = db.collection('karaoke'); 
             let response = []; 
             await query.get().then(querySnapshot => {
-                let docs = querySnapshot.docs; // result 
+                let docs = querySnapshot.docs; 
 
                 for(let doc of docs) 
                 {
                     const selectedItem = {
-                        id: doc.id,
-                        name: doc.data().name,
-                        description: doc.data().description, 
-                        price: doc.data().price
+                        id: doc.id, 
+                        artista: doc.data().artista,
+                        cancion: doc.data().cancion, 
+                        karaoke: doc.data().karaoke,
+                        canta: doc.data().canta
                     }; 
                     response.push(selectedItem)
                 }
@@ -101,17 +135,19 @@ app.get('/api/read/', (req, res) => {
         }
     })(); 
 }); 
+
 //update
 app.put('/api/update/:id', (req, res) => {
     (async () => {
         try {
-            const document = db.collection('products').doc(req.params.id); 
+            const document = db.collection('karaoke').doc(req.id); 
 
 
              await document.update({
-                 name: req.body.name,
-                 description: req.body.description,
-                 price: req.body.price
+                artista: req.body.artista,
+                cancion: req.body.cancion,
+                karaoke: req.body.karaoke,
+                canta: req.body.canta
              }) 
 
              return res.status(200).send(document); 
@@ -128,7 +164,7 @@ app.put('/api/update/:id', (req, res) => {
 app.delete('/api/delete/:id', (req, res) => {
     (async () => {
         try {
-            const document = db.collection('products').doc(req.params.id); 
+            const document = db.collection('karaoke').doc(req.params.id); 
 
             await document.delete()
              return res.status(200).send('deleted'); 
